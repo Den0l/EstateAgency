@@ -66,23 +66,27 @@ contract EstateAgency{
 // нельзя создать дважды одно и тоже
   function createEstate( uint size, string memory photo, uint rooms, EstateType esType) public{
     require(size > 0, unicode"Площадь должна быть больше 0");
+    for(uint i = 0; i < estates.length; i++)
+    {
+    require(estates[i].size != size ||
+            estates[i].rooms != rooms ||
+            estates[i].esType != esType,
+            unicode"Такая недвижимость уже существует");
+    }
     estates.push(Estate(estates.length+1, size, photo, true, msg.sender, rooms, esType));
     emit createdEstate(msg.sender, estates.length, photo, esType, block.timestamp);
   }
 
-//address owner;
-//address buyer;
-//uint price;
-//uint dateTime;
-//bool isActive;
-//AdvertisementStatus adStatus;
-//uint estateId;
 //создание объявления на наличие недвижимости, 
 //недвижимость должна быть активной, 
 //объявление может создать только владелец недвижимости, 
 //мы не можем создать несколько объявлений по одной и той же недвижимости
   function createAd (uint price, uint estateId) public onlyEstateOwner(estateId) isActiveEstate(estateId){
     require(price > 0, unicode"Цена должна быть больше 0");
+    for(uint i = 0; i < ads.length; i++)
+    {
+    require(estateId != ads[i].estateId, unicode"Такая недвижимость уже существует");
+    }
     ads.push(Advertisement(msg.sender, address(0), price, block.timestamp, true, AdvertisementStatus.Opend, estateId));
     emit createdAd(msg.sender, estateId, ads.length, price, block.timestamp);
   }
