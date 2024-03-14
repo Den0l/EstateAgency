@@ -110,13 +110,16 @@ contract EstateAgency{
   }
 
 //проверка на не владельца, проверка на достаточное количество средств, проверка на статус объявления (не closed)
-  function buyEstate(uint estateId, uint adId) public payable notOwner(adId) isAdClosed(adId) enouhtValue(msg.value, ads[adId-1].price) {
-    ads[adId-1].buyer = msg.sender;
-    ads[adId-1].adStatus = AdvertisementStatus.Closed;
-    estates[estateId-1].owner = msg.sender;
-    emit estatePurchased(ads[adId-1].owner, ads[adId-1].buyer, estateId, adId, ads[adId-1].adStatus, ads[adId-1].price, block.timestamp);
+  function buyEstate(uint estateId, uint adId) public payable notOwner(adId) isAdClosed(adId) {
+    require(address(this).balance >= ads[adId].price, unicode"Недостаточно средств на смарт-контракте");
 
-  }
+    ads[adId].buyer = msg.sender;
+    ads[adId].adStatus = AdvertisementStatus.Closed;
+    estates[estateId].owner = msg.sender;
+
+    payable(estates[estateId].owner).transfer(ads[adId].price);
+    emit estatePurchased(ads[adId].owner, ads[adId].buyer, estateId, adId, ads[adId].adStatus, ads[adId].price, block.timestamp);
+}
 
 //мы не можем снять больше чем у нас есть
  function withDraw() public {
